@@ -18,12 +18,25 @@ const client = new MongoClient(uri, {
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-client.connect((err) => {
-  const collection = client.db("test").collection("devices");
-  console.log("db connected");
-  // perform actions on the collection object
-  client.close();
-});
+async function run(){
+  try{
+    await client.connect();
+ 
+    console.log("db connected");
+ }
+  finally{
+
+  }
+  
+
+}
+run().catch(console.dir);
+// client.connect((err) => {
+//   const collection = client.db("test").collection("devices");
+//   console.log("db connected");
+//   // perform actions on the collection object
+//   client.close();
+// });
 
 
 app.get("/", (req, res) => {
