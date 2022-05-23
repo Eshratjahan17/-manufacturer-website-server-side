@@ -13,7 +13,7 @@ app.use(express.json());
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.uzzmy.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri);
+
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -22,6 +22,15 @@ const client = new MongoClient(uri, {
 async function run(){
   try{
     await client.connect();
+    const toolsCollection = client.db("manufacture-car-tools").collection("tools");
+    app.get('/tools',async(req,res)=>{
+      const q = req.query;
+        console.log(q);
+        const cursor=toolsCollection.find(q);
+        const result=await cursor.toArray();
+        res.send(result);
+
+    })
  
     console.log("db connected");
  }
