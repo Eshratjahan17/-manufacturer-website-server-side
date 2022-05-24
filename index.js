@@ -50,6 +50,12 @@ async function run(){
         $set:user,
 
       };
+      //get Users
+      app.get('/user',async (req , res)=>{
+         const cursor = usersCollection.find();
+         const result = await cursor.toArray();
+        res.send(users);
+      });
       
       const result=await usersCollection.updateOne(filter,updateDoc,options);
       const token = jwt.sign(
