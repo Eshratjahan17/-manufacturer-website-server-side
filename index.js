@@ -73,31 +73,30 @@ async function run(){
     });
 
     //make Admin
-    app.put("/user/admin/:email",verifyJwt, async (req, res) => {
+    app.put("/user/admin/:email", verifyJwt, async (req, res) => {
       const email = req.params.email;
-      const requester=req.decoded.email;
-      const requesterAccount=await usersCollection.findOne({email:requester});
-      if(requesterAccount.role === 'admin'){
-         const filter = { email: email };
-         const updateDoc = {
-           $set: { role: "admin" },
-         };
+      const requester = req.decoded.email;
+      const requesterAccount = await usersCollection.findOne({
+        email: requester,
+      });
+      if (requesterAccount.role === "admin") {
+        const filter = { email: email };
+        const updateDoc = {
+          $set: { role: "admin" },
+        };
 
-         const result = await usersCollection.updateOne(filter, updateDoc);
-         res.send(result);
-        
+        const result = await usersCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      } else {
+        res.status(403).send({ message: "forbidden" });
       }
-      else{
-        res.status(403).send({message:'forbidden'});
-      }
-     
     });
     //check Admin
-    app.get('/admin/:email',async(req,res)=>{
-      const email=req.params.email;
-      const user= await usersCollection.findOne({email:email});
-      const isAdmin=user.role === 'admin';
-      res.send({admin :isAdmin})
+    app.get("/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await usersCollection.findOne({ email: email });
+      const isAdmin = user.role === "admin";
+      res.send({ admin: isAdmin });
     });
     //get Users
     app.get("/user", async (req, res) => {
@@ -106,32 +105,46 @@ async function run(){
       res.send(result);
     });
     // update user
-    app.put('/user/:email',async(req,res)=>{
+    app.put("/user/:email", async (req, res) => {
       const email = req.params.email;
-      const updatedUser=req.body;
+      const updatedUser = req.body;
       const filter = { email: email };
       // const options ={upsert:true}
       const updatedDoc = {
         $set: updatedUser,
       };
-      const result=await usersCollection.updateMany(filter,updatedDoc,options);
-      res.send(result)
-
-    })
+      const result = await usersCollection.updateMany(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
     //Post a review
-     app.post("/addreview", async (req, res) => {
-       const data = req.body;
-       const result = await reviewCollection.insertOne(data);
-       res.send(result);
-     });
-     //get reviwe
-     app.get("/addreview",async(req,res)=>{
-       const cursor = reviewCollection.find();
+    app.post("/addreview", async (req, res) => {
+      const data = req.body;
+      const result = await reviewCollection.insertOne(data);
+      res.send(result);
+    });
+    //get review
+    app.get("/addreview", async (req, res) => {
+      const cursor = reviewCollection.find();
       const result = await cursor.toArray();
       res.send(result);
+    });
 
-     })
-
+    //Add a product
+    app.post("/addProduct", async (req, res) => {
+      const data = req.body;
+      const result = await toolsCollection.insertOne(data);
+      res.send(result);
+    });
+    //Add a product
+    app.get("/addProduct", async (req, res) => {
+      const cursor = toolsCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     //All data
     app.get("/tools", async (req, res) => {
