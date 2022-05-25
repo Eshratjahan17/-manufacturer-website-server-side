@@ -45,6 +45,9 @@ async function run(){
     const usersCollection = client
       .db("manufacture-car-tools")
       .collection("users");
+    const reviewCollection = client
+      .db("manufacture-car-tools")
+      .collection("reviwes");
 
     //users
     app.put("/user/:email", async (req, res) => {
@@ -102,6 +105,33 @@ async function run(){
       const result = await cursor.toArray();
       res.send(result);
     });
+    // update user
+    app.put('/user/:email',async(req,res)=>{
+      const email = req.params.email;
+      const updatedUser=req.body;
+      const filter = { email: email };
+      // const options ={upsert:true}
+      const updatedDoc = {
+        $set: updatedUser,
+      };
+      const result=await usersCollection.updateMany(filter,updatedDoc,options);
+      res.send(result)
+
+    })
+    //Post a review
+     app.post("/addreview", async (req, res) => {
+       const data = req.body;
+       const result = await reviewCollection.insertOne(data);
+       res.send(result);
+     });
+     //get reviwe
+     app.get("/addreview",async(req,res)=>{
+       const cursor = reviewCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+
+     })
+
 
     //All data
     app.get("/tools", async (req, res) => {
