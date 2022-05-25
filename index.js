@@ -36,37 +36,59 @@ function verifyJwt(req,res,next){
 async function run(){
   try{
     await client.connect();
-    const toolsCollection = client.db("manufacture-car-tools").collection("tools");
-    const ordersCollection = client.db("manufacture-car-tools").collection("orders");
-    const usersCollection = client.db("manufacture-car-tools").collection("users");
+    const toolsCollection = client
+      .db("manufacture-car-tools")
+      .collection("tools");
+    const ordersCollection = client
+      .db("manufacture-car-tools")
+      .collection("orders");
+    const usersCollection = client
+      .db("manufacture-car-tools")
+      .collection("users");
 
     //users
-    app.put('/user/:email',async(req,res)=>{
-      const email=req.params.email;
-      const user=req.body;
-      const filter={email:email};
-      const options={upsert:true};
-      const updateDoc={
-        $set:user,
-
+    app.put("/user/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
       };
-      //get Users
-      app.get('/user',async (req , res)=>{
-         const cursor = usersCollection.find();
-         const result = await cursor.toArray();
-        res.send(users);
-      });
-      
-      const result=await usersCollection.updateOne(filter,updateDoc,options);
+
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
       const token = jwt.sign(
         { email: email },
-        process.env.ACCESS_TOKEN_SECRATE,{expiresIn:'1h'}
+        process.env.ACCESS_TOKEN_SECRATE,
+        { expiresIn: "1h" }
       );
-      res.send({result,token});
+      res.send({ result, token });
+    });
 
-    }) 
+    //make Admin
+    app.put("/user/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const updateDoc = {
+        $set: {role:'admin'},
+      };
 
-
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send(result);
+    });
+    //get Users
+    app.get("/user", async (req, res) => {
+      const cursor = usersCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     //All data
     app.get("/tools", async (req, res) => {
@@ -85,18 +107,18 @@ async function run(){
       res.send(tool);
     });
     //orders post
-    app.post('/order',async(req,res)=>{
-      const orders=req.body;
-      const result=await ordersCollection.insertOne(orders);
+    app.post("/order", async (req, res) => {
+      const orders = req.body;
+      const result = await ordersCollection.insertOne(orders);
       res.send(result);
-    })
-    app.get('/order',verifyJwt, async(req,res)=>{
+    });
+    app.get("/order", verifyJwt, async (req, res) => {
       const email = req.query.email;
-      
-      const query={email:email}
-      const orders=await ordersCollection.find(query).toArray();
+
+      const query = { email: email };
+      const orders = await ordersCollection.find(query).toArray();
       res.send(orders);
-    })
+    });
 
     console.log("db connected");
   }
