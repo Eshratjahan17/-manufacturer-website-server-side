@@ -167,6 +167,15 @@ async function run(){
       const result = await cursor.toArray();
       res.send(result);
     });
+    //All orders
+    app.get("/orders",async(req,res)=>{
+      const q = req.query;
+      console.log(q);
+      const cursor = ordersCollection.find(q);
+      const result = await cursor.toArray();
+      res.send(result);
+
+    })
     //specific data
     //http://localhost:5000/tool/:id
     app.get("/tools/:id", async (req, res) => {
