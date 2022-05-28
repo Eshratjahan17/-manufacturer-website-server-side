@@ -51,6 +51,9 @@ async function run(){
     const reviewCollection = client
       .db("manufacture-car-tools")
       .collection("reviwes");
+    const paymentCollection = client
+      .db("manufacture-car-tools")
+      .collection("payments");
 
     //users
     app.put("/user/:email", async (req, res) => {
@@ -93,6 +96,18 @@ async function run(){
       } else {
         res.status(403).send({ message: "forbidden" });
       }
+    });
+    //Update status
+    app.put("/orders/paid/:id",  async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id:ObjectId(id) };
+        const updateDoc = {
+          $set: { status: "shipped" },
+        };
+        const options = { upsert: true };
+        const result = await ordersCollection.updateOne(filter, updateDoc,options);
+        res.send(result);
+     
     });
     //check Admin
     app.get("/admin/:email", async (req, res) => {
@@ -161,18 +176,7 @@ async function run(){
  })
 
 
-    //Payment 
-    // app.post("/create-payment-intent", verifyJwt, async (req, res) => {
-    //   const tools = req.body;
-    //   const price = tools.price;
-    //   const amount = price * 100;
-    //   const paymentIntent = await stripe.paymentIntents.create({
-    //     amount: amount,
-    //     currency: "usd",
-    //     payment_method_types: ["card"],
-    //   });
-    //   res.send({ clientSecret: paymentIntent.client_secret });
-    // });
+    
 
     //All data
     app.get("/tools", async (req, res) => {
@@ -219,6 +223,22 @@ async function run(){
       const order = await ordersCollection.findOne(query);
       res.send(order);
     });
+    app.patch('/order/:id',async(req,res)=>{
+      const id=req.params.id;
+      const payment=req.body;
+      const filter={_id:ObjectId(id)};
+      const updatedDoc={
+        $set:{
+          paid:true,
+          transactionId:payment.transactionId
+        }
+
+      }
+      const updatedOrder=await ordersCollection.updateOne(filter,updatedDoc);
+      const result=await paymentCollection.insertOne(payment);
+      res.send(updatedDoc)
+
+    })
     //delete
      app.delete("/order/:id", async (req, res) => {
        const id = req.params.id;
